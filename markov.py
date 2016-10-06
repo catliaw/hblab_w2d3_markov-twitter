@@ -3,6 +3,12 @@ import sys
 from random import choice
 import twitter
 
+api = twitter.Api(consumer_key=os.environ['TWITTER_CONSUMER_KEY'],
+                  consumer_secret=os.environ['TWITTER_CONSUMER_SECRET'],
+                  access_token_key=os.environ['TWITTER_ACCESS_TOKEN_KEY'],
+                  access_token_secret=os.environ['TWITTER_ACCESS_TOKEN_SECRET'])
+
+# print api.VerifyCredentials()
 
 def open_and_read_file(filenames):
     """Given a list of files, open them, read the text, and return one long
@@ -43,8 +49,11 @@ def make_chains(text_string):
 def make_text(chains):
     """Takes dictionary of markov chains; returns random text."""
 
+    counter = 0
     key = choice(chains.keys())
     words = [key[0], key[1]]
+    markov_sentence = "#hbgracefall16 @soylentbleen "
+    counter = len(key[0]) + len(key[1]) + len(markov_sentence) + 2
     while key in chains:
         # Keep looping until we have a key that isn't in the chains
         # (which would mean it was the end of our original text)
@@ -53,17 +62,26 @@ def make_text(chains):
         # it would run for a very long time.
 
         word = choice(chains[key])
-        words.append(word)
-        key = (key[1], word)
-
-    return " ".join(words)
+        counter += len(word) + 1
+        if (counter - 1) <= 140:
+            words.append(word)
+            key = (key[1], word)
+        else:
+            break
+    # print "Final random generated value: " + word
+    # print "Final counter value: " + str(counter)
+    markov_sentence += " ".join(words)
+    return markov_sentence
 
 
 def tweet(chains):
     # Use Python os.environ to get at environmental variables
     # Note: you must run `source secrets.sh` before running this file
     # to make sure these environmental variables are set.
-    pass
+    sentence = make_text(chains)
+    status = api.PostUpdate(sentence)
+    print status.text
+
 
 # Get the filenames from the user through a command line prompt, ex:
 # python markov.py green-eggs.txt shakespeare.txt
@@ -76,4 +94,4 @@ text = open_and_read_file(filenames)
 chains = make_chains(text)
 
 # Your task is to write a new function tweet, that will take chains as input
-# tweet(chains)
+tweet(chains)
