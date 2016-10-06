@@ -78,8 +78,8 @@ def tweet(chains):
     # Use Python os.environ to get at environmental variables
     # Note: you must run `source secrets.sh` before running this file
     # to make sure these environmental variables are set.
-    sentence = make_text(chains)
-    status = api.PostUpdate(sentence)
+    # sentence = make_text(chains)
+    status = api.PostUpdate(make_text(chains))
     print status.text
 
 
